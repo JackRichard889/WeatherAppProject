@@ -192,13 +192,32 @@ fun main() {
     service.getGeocodingFromZip(zipCode) { geocoding ->
         print("\nFound zip code, fetching weather...")
         service.getWeatherData(geocoding.lat, geocoding.lon) { weather ->
-            println("\n\nDone! Select from the options below to start filtering weather data.")
+            println("\n\nDone! Here's the weather:\n\n")
 
             val date = Date()
             val current = weather.hourly.sortedBy { it.dt }.dropWhile { it.dt < date.toInstant().nano }.first()
-            println(SimpleDateFormat().format(current.dt * 1000L))
-            println(current)
-            println(icons[current.weather.first().icon.take(2)])
+
+            val icon = icons[current.weather.first().icon.take(2)]!!
+            val firstIndex = (icon.split("\n").count { it != "" } / 2) - 1
+            val secondIndex = (icon.split("\n").count { it != "" } / 2)
+            val thirdIndex = (icon.split("\n").count { it != "" } / 2) + 1
+
+            var currentIndex = 0
+            icon.split("\n").forEach {
+                if (it != "") {
+                    print(it)
+                    if (firstIndex == currentIndex) {
+                        println(SimpleDateFormat().format(current.dt * 1000L))
+                    } else if (secondIndex == currentIndex) {
+                        println(current.temp.toString() + "°F / Feels Like " + current.feels_like + "°F")
+                    } else if (thirdIndex == currentIndex) {
+                        println(current.weather.first().description.capitalize())
+                    } else {
+                        println()
+                    }
+                    currentIndex++
+                }
+            }
         }
     }
 }
